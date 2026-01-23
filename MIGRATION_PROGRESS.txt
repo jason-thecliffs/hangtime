@@ -1,0 +1,111 @@
+================================================================================
+HangTime Migration: Replit → GitHub + Railway
+================================================================================
+Last Updated: 2026-01-22
+
+OVERVIEW
+--------
+Migrate HangTime from Replit to a standalone GitHub + Railway deployment.
+Strategy: Modify local codebase, push to GitHub, deploy to Railway with its own PostgreSQL.
+
+================================================================================
+PHASE 1: Remove Replit-Specific Code                                  [COMPLETE]
+================================================================================
+[x] client/index.html - Removed Replit banner script (lines 11-12)
+[x] vite.config.ts - Removed Replit plugins (import and plugin usage)
+[x] server/index.ts - Made PORT configurable via environment variable
+
+================================================================================
+PHASE 2: Switch from Neon to Standard PostgreSQL                      [COMPLETE]
+================================================================================
+[x] package.json - Removed @neondatabase/serverless, added pg
+[x] package.json - Removed Replit devDependencies, added @types/pg
+[x] server/db.ts - Rewrote to use standard pg Pool with drizzle-orm/node-postgres
+
+================================================================================
+PHASE 3: Create New Files                                             [COMPLETE]
+================================================================================
+[x] .gitignore - Created with node_modules, dist, .env, .replit, etc.
+[x] .env.example - Created with DATABASE_URL, NODE_ENV, PORT
+[x] railway.toml - Created with build/deploy configuration
+[x] .github/workflows/ci.yml - Created with build/check/test pipeline
+
+================================================================================
+PHASE 4: Local Verification                                           [COMPLETE]
+================================================================================
+[x] Run: npm install (to update node_modules with pg instead of neon)
+[x] Run: npm run check (TypeScript type checking)
+    - Fixed 2 pre-existing TS errors:
+      - server/vite.ts: allowedHosts type (added `as const`)
+      - client/src/pages/edit-event.tsx: null→undefined conversion
+[x] Run: npm run build (production build test)
+[ ] (Optional) Test with a local PostgreSQL DATABASE_URL if available
+
+================================================================================
+PHASE 5: Git & GitHub                                                 [PENDING]
+================================================================================
+[ ] git init
+[ ] git add .
+[ ] git commit -m "Initial commit: HangTime scheduler (standalone)"
+[ ] Create repo on GitHub (e.g., hangtime)
+[ ] git remote add origin https://github.com/YOUR_USERNAME/hangtime.git
+[ ] git branch -M main
+[ ] git push -u origin main
+
+================================================================================
+PHASE 6: Deploy to Railway                                            [PENDING]
+================================================================================
+[ ] Create new project on railway.app → Deploy from GitHub
+[ ] Select the hangtime repository
+[ ] Add PostgreSQL service (Click "Add Service" → "Database" → "PostgreSQL")
+[ ] Set environment variable: NODE_ENV = production
+    (DATABASE_URL auto-configured by Railway)
+[ ] After deployment, run: npm run db:push (via Railway shell/CLI)
+
+================================================================================
+PHASE 7: Verification Testing                                         [PENDING]
+================================================================================
+[ ] Home page - Visit Railway URL, verify HangTime loads
+[ ] Create event - Create new event, verify success
+[ ] Share link - Copy share link, verify it works
+[ ] Participate - Submit availability, verify response saved
+[ ] View results - Check event page, verify all responses visible
+
+================================================================================
+FILES MODIFIED
+================================================================================
+- client/index.html      → Removed Replit banner
+- vite.config.ts         → Removed Replit plugins
+- package.json           → Swapped Neon→pg, removed Replit deps
+- server/index.ts        → Made PORT configurable
+- server/db.ts           → Rewrote for standard PostgreSQL
+- server/vite.ts         → Fixed allowedHosts type (added `as const`)
+- client/src/pages/edit-event.tsx → Fixed null→undefined for description
+
+================================================================================
+FILES CREATED
+================================================================================
+- .gitignore
+- .env.example
+- railway.toml
+- .github/workflows/ci.yml
+- MIGRATION_PROGRESS.txt (this file)
+
+================================================================================
+NOTES
+================================================================================
+- Replit app remains unchanged and running during transition
+- Railway database will be fresh (no data migration)
+- If Railway fails, Replit continues working as fallback
+- Local git history allows reverting any changes
+
+================================================================================
+NEXT STEPS
+================================================================================
+1. Run `npm install` to update dependencies
+2. Run `npm run check` to verify TypeScript compiles
+3. Run `npm run build` to test production build
+4. Initialize git and push to GitHub
+5. Create Railway project and add PostgreSQL
+6. Run db:push to create database tables
+7. Test the deployed application
