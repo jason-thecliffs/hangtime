@@ -23,11 +23,13 @@ const formSchema = z.object({
   title: z.string().min(1, "Event title is required"),
   description: z.string().optional(),
   duration: z.string().min(1, "Duration is required"),
+  organizerName: z.string().min(1, "Your name is required"),
 });
 
 type TimeOption = {
   date: string;
   startTime: string;
+  availability: "available" | "maybe" | "unavailable";
 };
 
 // Helper function to calculate end time based on start time and duration
@@ -130,7 +132,7 @@ export default function CreateEvent() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [timeOptions, setTimeOptions] = useState<TimeOption[]>([
-    { date: "", startTime: "" }
+    { date: "", startTime: "", availability: "available" }
   ]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -139,20 +141,37 @@ export default function CreateEvent() {
       title: "",
       description: "",
       duration: "",
+      organizerName: "",
     },
   });
 
   const createEventMutation = useMutation({
     mutationFn: async (data: { event: z.infer<typeof formSchema>; timeOptions: TimeOption[] }) => {
       const response = await apiRequest("POST", "/api/events", data);
-      return response.json();
+      const result = await response.json();
+      return { result, originalTimeOptions: data.timeOptions, organizerName: data.event.organizerName };
     },
-    onSuccess: (data) => {
+    onSuccess: async ({ result, originalTimeOptions, organizerName }) => {
+      // Submit creator's availability
+      try {
+        const availabilityData = result.timeOptions.map((timeOption: { id: number }, index: number) => ({
+          timeOptionId: timeOption.id,
+          status: originalTimeOptions[index].availability,
+        }));
+
+        await apiRequest("POST", `/api/events/${result.shareId}/participate`, {
+          participant: { name: organizerName },
+          availability: availabilityData,
+        });
+      } catch (error) {
+        console.error("Failed to submit creator availability:", error);
+      }
+
       toast({
         title: "Event Created!",
         description: "Your event has been created successfully.",
       });
-      setLocation(`/event/${data.shareId}`);
+      setLocation(`/event/${result.shareId}`);
     },
     onError: () => {
       toast({
@@ -168,7 +187,7 @@ export default function CreateEvent() {
     const nextDate = lastOption.date ? getNextDay(lastOption.date) : "";
     const nextStartTime = lastOption.startTime || "";
     
-    setTimeOptions([...timeOptions, { date: nextDate, startTime: nextStartTime }]);
+    setTimeOptions([...timeOptions, { date: nextDate, startTime: nextStartTime, availability: "available" }]);
   };
 
   const removeTimeOption = (index: number) => {
@@ -179,7 +198,13 @@ export default function CreateEvent() {
 
   const updateTimeOption = (index: number, field: keyof TimeOption, value: string) => {
     const updated = [...timeOptions];
-    updated[index][field] = value;
+    updated[index][field] = value as any;
+    setTimeOptions(updated);
+  };
+
+  const updateTimeOptionAvailability = (index: number, value: "available" | "maybe" | "unavailable") => {
+    const updated = [...timeOptions];
+    updated[index].availability = value;
     setTimeOptions(updated);
   };
 
@@ -286,11 +311,25 @@ export default function CreateEvent() {
                     <FormItem>
                       <FormLabel>Event Description</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Tell participants what this event is about..." 
-                          rows={3} 
-                          {...field} 
+                        <Textarea
+                          placeholder="Tell participants what this event is about..."
+                          rows={3}
+                          {...field}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="organizerName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Event Organizer (Your Name)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter your name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -339,6 +378,22 @@ export default function CreateEvent() {
                               )}
                             </>
                           )}
+                          <div className="flex flex-col">
+                            <label className="text-sm text-gray-600 mb-1">Your Availability</label>
+                            <Select
+                              value={option.availability}
+                              onValueChange={(value) => updateTimeOptionAvailability(index, value as "available" | "maybe" | "unavailable")}
+                            >
+                              <SelectTrigger className="w-40">
+                                <SelectValue placeholder="Your Availability" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="available">Available</SelectItem>
+                                <SelectItem value="maybe">Maybe</SelectItem>
+                                <SelectItem value="unavailable">Not Available</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                         {timeOptions.length > 1 && (
                           <Button

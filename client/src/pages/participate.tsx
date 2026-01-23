@@ -270,7 +270,7 @@ export default function Participate({ shareId }: ParticipateProps) {
                             className={`flex-1 py-3 px-4 font-medium transition-colors ${
                               currentStatus === "available" 
                                 ? "border-success bg-success text-white hover:bg-green-600" 
-                                : "border-neutral-100 text-gray-600 hover:bg-gray-50"
+                                : "border-neutral-100 text-gray-600 hover:bg-gray-50 hover:text-gray-700"
                             }`}
                             onClick={() => setTimeOptionAvailability(option.id, "available")}
                           >
@@ -283,7 +283,7 @@ export default function Participate({ shareId }: ParticipateProps) {
                             className={`flex-1 py-3 px-4 font-medium transition-colors ${
                               currentStatus === "maybe" 
                                 ? "border-yellow-400 bg-yellow-400 text-yellow-900 hover:bg-yellow-500" 
-                                : "border-neutral-100 text-gray-600 hover:bg-gray-50"
+                                : "border-neutral-100 text-gray-600 hover:bg-gray-50 hover:text-gray-700"
                             }`}
                             onClick={() => setTimeOptionAvailability(option.id, "maybe")}
                           >
@@ -296,7 +296,7 @@ export default function Participate({ shareId }: ParticipateProps) {
                             className={`flex-1 py-3 px-4 font-medium transition-colors ${
                               currentStatus === "unavailable" 
                                 ? "border-red-500 bg-red-500 text-white hover:bg-red-600" 
-                                : "border-neutral-100 text-gray-600 hover:bg-gray-50"
+                                : "border-neutral-100 text-gray-600 hover:bg-gray-50 hover:text-gray-700"
                             }`}
                             onClick={() => setTimeOptionAvailability(option.id, "unavailable")}
                           >

@@ -1,0 +1,115 @@
+================================================================================
+HangTime - Latest Updates
+================================================================================
+Last Updated: 2026-01-22
+
+================================================================================
+PROJECT STATUS
+================================================================================
+- GitHub Repo: https://github.com/jason-thecliffs/hangtime
+- Railway App: https://hangtime-app-production.up.railway.app
+- Railway Dashboard: https://railway.com/project/02eb2c38-977d-4866-a016-aab6fc59da30
+
+================================================================================
+MIGRATION SUMMARY (Completed 2026-01-22)
+================================================================================
+Successfully migrated HangTime from Replit to GitHub + Railway:
+
+1. Removed Replit-specific code (banner script, plugins)
+2. Switched from Neon serverless to standard PostgreSQL (pg)
+3. Created deployment configs (.gitignore, .env.example, railway.toml)
+4. Fixed TypeScript errors and ESM import compatibility
+5. Deployed to Railway with PostgreSQL database
+6. All verification tests passed (create event, participate, view results)
+
+See MIGRATION_PROGRESS.txt for full details.
+
+================================================================================
+RECENT ENHANCEMENTS
+================================================================================
+
+### Creator Availability + Hover State Fix (2026-01-22)
+
+**Enhancement 1: Creator Availability on Create Page**
+- Problem: Event creators had to create event first, then go to participate page
+- Solution: Added organizer name field and availability dropdowns to create-event page
+- Creators can now set their availability for each time option during event creation
+- Availability is automatically submitted after event creation
+
+**Enhancement 2: Participate Page Hover State Fix**
+- Problem: Hover on unselected buttons made text illegible (white on light gray)
+- Root cause: Button component's outline variant applied hover:text-accent-foreground
+- Solution: Added hover:text-gray-700 to override button's default hover text color
+
+**Files Changed:**
+- client/src/pages/create-event.tsx
+  - Added organizerName to form schema and defaults
+  - Added availability field to TimeOption type
+  - Added updateTimeOptionAvailability function
+  - Added "Event Organizer (Your Name)" input field
+  - Added availability dropdown to each time option row
+  - Updated mutation to submit creator availability on success
+
+- client/src/pages/participate.tsx
+  - Added hover:text-gray-700 to Available button unselected state
+  - Added hover:text-gray-700 to Maybe button unselected state
+  - Added hover:text-gray-700 to Not Available button unselected state
+
+### Best Availability Badge Logic Fix (2026-01-22)
+Commit: 5670941
+
+**Problem:**
+- Badge showed even when no responses existed
+- Only highlighted one option even when multiple were tied
+- Used "fewer maybes" as tiebreaker (should be "more maybes")
+
+**Solution:**
+- Only show badge when at least 1 response exists
+- Show badge on ALL tied options
+- New ranking: most available > most maybes > show all tied
+
+**Files Changed:**
+- client/src/lib/utils.ts
+  - Replaced getBestTimeSlot() with getBestTimeSlotIds()
+  - Returns number[] instead of single option
+  - Returns [] if no responses exist
+
+- client/src/pages/event-view.tsx
+  - Updated import and variable name
+  - Summary table: checks bestTimeSlotIds.includes(option.id)
+  - Time option cards: checks bestTimeSlotIds.includes(option.id)
+  - Confirm button: checks bestTimeSlotIds.length > 0
+
+================================================================================
+TECH STACK
+================================================================================
+- Frontend: React + Vite + TypeScript + Tailwind CSS + shadcn/ui
+- Backend: Express.js + TypeScript
+- Database: PostgreSQL with Drizzle ORM
+- Hosting: Railway (app + database)
+- Repo: GitHub
+
+================================================================================
+KEY FILES
+================================================================================
+- client/src/lib/utils.ts - Utility functions (date formatting, best slot logic)
+- client/src/pages/event-view.tsx - Event details/results page
+- client/src/pages/create-event.tsx - Event creation wizard
+- client/src/pages/participate.tsx - Availability submission form
+- server/index.ts - Express server entry point
+- server/db.ts - Database connection
+- shared/schema.ts - Drizzle schema definitions
+
+================================================================================
+DEPLOYMENT NOTES
+================================================================================
+- Railway auto-deploy: Currently NOT enabled (must deploy manually or via CLI)
+- To deploy: `railway up` from project directory
+- To check status: `railway deployment list`
+
+================================================================================
+NEXT SESSION IDEAS
+================================================================================
+- Enable Railway auto-deploy from GitHub
+- Add CI workflow to GitHub (exists locally at .github/workflows/ci.yml)
+- Consider additional features as needed
