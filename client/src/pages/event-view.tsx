@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { formatDate, formatTime, getBestTimeSlot } from "@/lib/utils";
+import { formatDate, formatTime, getBestTimeSlotIds } from "@/lib/utils";
 import type { EventWithDetails } from "@shared/schema";
 
 interface EventViewProps {
@@ -147,7 +147,7 @@ export default function EventView({ shareId }: EventViewProps) {
     );
   }
 
-  const bestTimeSlot = getBestTimeSlot(event.timeOptions);
+  const bestTimeSlotIds = getBestTimeSlotIds(event.timeOptions);
   const participateUrl = `${window.location.origin}/participate/${shareId}`;
   const summaryStats = calculateSummaryStats(event.timeOptions);
   const topOptions = summaryStats.slice(0, 5);
@@ -200,7 +200,7 @@ export default function EventView({ shareId }: EventViewProps) {
                       >
                         <TableCell className="font-medium">
                           <div className="flex items-center">
-                            {index === 0 && (
+                            {bestTimeSlotIds.includes(option.id) && (
                               <Badge className="text-xs bg-success text-white mr-2">
                                 Recommended - Best Availability
                               </Badge>
@@ -248,7 +248,7 @@ export default function EventView({ shareId }: EventViewProps) {
               
               <div className="space-y-3">
                 {event.timeOptions.map((option) => {
-                  const isBest = bestTimeSlot?.id === option.id;
+                  const isBest = bestTimeSlotIds.includes(option.id);
                   
                   return (
                     <div 
@@ -355,7 +355,7 @@ export default function EventView({ shareId }: EventViewProps) {
                   Share
                 </Button>
               </div>
-              {bestTimeSlot && (
+              {bestTimeSlotIds.length > 0 && (
                 <Button className="bg-success hover:bg-green-600">
                   <Check className="mr-2 h-4 w-4" />
                   Confirm Best Time

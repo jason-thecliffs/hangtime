@@ -24,19 +24,33 @@ export function formatTime(timeString: string): string {
   return `${displayHour}:${minutes} ${period}`;
 }
 
-export function getBestTimeSlot(timeOptions: any[]): any | null {
-  if (timeOptions.length === 0) return null;
-  
-  return timeOptions.reduce((best, current) => {
-    const currentAvailable = current.availabilityCount.available;
-    const bestAvailable = best.availabilityCount.available;
-    
-    if (currentAvailable > bestAvailable) {
-      return current;
-    } else if (currentAvailable === bestAvailable) {
-      // If tied, prefer the one with fewer "maybe" responses
-      return current.availabilityCount.maybe < best.availabilityCount.maybe ? current : best;
-    }
-    return best;
-  });
+export function getBestTimeSlotIds(timeOptions: any[]): number[] {
+  if (timeOptions.length === 0) return [];
+
+  // Check if there are any responses at all
+  const totalResponses = timeOptions.reduce(
+    (sum, option) => sum + option.availabilityCount.total,
+    0
+  );
+  if (totalResponses === 0) return [];
+
+  // Find max available count
+  const maxAvailable = Math.max(
+    ...timeOptions.map(option => option.availabilityCount.available)
+  );
+
+  // Filter to options matching max available
+  const topAvailableOptions = timeOptions.filter(
+    option => option.availabilityCount.available === maxAvailable
+  );
+
+  // Among those, find max maybe count
+  const maxMaybe = Math.max(
+    ...topAvailableOptions.map(option => option.availabilityCount.maybe)
+  );
+
+  // Return IDs of all options matching both max available AND max maybe
+  return topAvailableOptions
+    .filter(option => option.availabilityCount.maybe === maxMaybe)
+    .map(option => option.id);
 }
