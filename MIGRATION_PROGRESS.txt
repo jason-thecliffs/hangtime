@@ -1,7 +1,7 @@
 ================================================================================
 HangTime Migration: Replit → GitHub + Railway
 ================================================================================
-Last Updated: 2026-01-22
+Last Updated: 2026-01-22 (deployment completed)
 
 OVERVIEW
 --------
@@ -42,30 +42,36 @@ PHASE 4: Local Verification                                           [COMPLETE]
 [ ] (Optional) Test with a local PostgreSQL DATABASE_URL if available
 
 ================================================================================
-PHASE 5: Git & GitHub                                                 [PENDING]
+PHASE 5: Git & GitHub                                                 [COMPLETE]
 ================================================================================
-[ ] git init
-[ ] git add .
-[ ] git commit -m "Initial commit: HangTime scheduler (standalone)"
-[ ] Create repo on GitHub (e.g., hangtime)
-[ ] git remote add origin https://github.com/YOUR_USERNAME/hangtime.git
-[ ] git branch -M main
-[ ] git push -u origin main
+[x] git init
+[x] git add . (excluding .claude/, replit.md)
+[x] git commit -m "Initial commit: HangTime scheduler (standalone)"
+[x] Create repo on GitHub: https://github.com/jason-thecliffs/hangtime
+[x] git push -u origin main
+    Note: CI workflow (.github/workflows/ci.yml) not pushed due to token scope.
+    File exists locally - can be added via GitHub web UI if needed.
 
 ================================================================================
-PHASE 6: Deploy to Railway                                            [PENDING]
+PHASE 6: Deploy to Railway                                            [COMPLETE]
 ================================================================================
-[ ] Create new project on railway.app → Deploy from GitHub
-[ ] Select the hangtime repository
-[ ] Add PostgreSQL service (Click "Add Service" → "Database" → "PostgreSQL")
-[ ] Set environment variable: NODE_ENV = production
-    (DATABASE_URL auto-configured by Railway)
-[ ] After deployment, run: npm run db:push (via Railway shell/CLI)
+[x] Create new project on railway.app
+[x] Add PostgreSQL service
+[x] Set environment variables: NODE_ENV=production, DATABASE_URL
+[x] Deploy app service linked to GitHub repo
+[x] Database schema pushed via: npm run db:push
+
+App URL: https://hangtime-app-production.up.railway.app
+Railway Project: https://railway.com/project/02eb2c38-977d-4866-a016-aab6fc59da30
+
+Additional fixes made during deployment:
+- Fixed pg import for ESM compatibility (default import pattern)
+- Added .node-version file to specify Node 20
 
 ================================================================================
-PHASE 7: Verification Testing                                         [PENDING]
+PHASE 7: Verification Testing                                         [PARTIAL]
 ================================================================================
-[ ] Home page - Visit Railway URL, verify HangTime loads
+[x] Home page - Visit Railway URL, verify HangTime loads (HTTP 200)
 [ ] Create event - Create new event, verify success
 [ ] Share link - Copy share link, verify it works
 [ ] Participate - Submit availability, verify response saved
@@ -78,9 +84,10 @@ FILES MODIFIED
 - vite.config.ts         → Removed Replit plugins
 - package.json           → Swapped Neon→pg, removed Replit deps
 - server/index.ts        → Made PORT configurable
-- server/db.ts           → Rewrote for standard PostgreSQL
+- server/db.ts           → Rewrote for standard PostgreSQL (also fixed ESM import)
 - server/vite.ts         → Fixed allowedHosts type (added `as const`)
 - client/src/pages/edit-event.tsx → Fixed null→undefined for description
+- .gitignore             → Added .claude/ directory
 
 ================================================================================
 FILES CREATED
@@ -88,7 +95,8 @@ FILES CREATED
 - .gitignore
 - .env.example
 - railway.toml
-- .github/workflows/ci.yml
+- .github/workflows/ci.yml (exists locally, not in GitHub due to token scope)
+- .node-version          → Specifies Node 20 for Railway
 - MIGRATION_PROGRESS.txt (this file)
 
 ================================================================================
@@ -102,10 +110,14 @@ NOTES
 ================================================================================
 NEXT STEPS
 ================================================================================
-1. Run `npm install` to update dependencies
-2. Run `npm run check` to verify TypeScript compiles
-3. Run `npm run build` to test production build
-4. Initialize git and push to GitHub
-5. Create Railway project and add PostgreSQL
-6. Run db:push to create database tables
-7. Test the deployed application
+1. [DONE] All deployment steps completed
+2. Test the app manually at: https://hangtime-app-production.up.railway.app
+3. Optional: Add the CI workflow to GitHub (couldn't push due to token scope)
+
+================================================================================
+DEPLOYMENT SUMMARY
+================================================================================
+- GitHub Repo: https://github.com/jason-thecliffs/hangtime
+- Railway App: https://hangtime-app-production.up.railway.app
+- Railway Dashboard: https://railway.com/project/02eb2c38-977d-4866-a016-aab6fc59da30
+- Replit app remains unchanged as fallback
