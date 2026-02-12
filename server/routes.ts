@@ -22,7 +22,12 @@ const participateRequestSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
+
+  // Health check endpoint for Railway
+  app.get("/health", (_req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
   // Create a new event
   app.post("/api/events", async (req, res) => {
     try {
